@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,31 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Scratch-like block categories
+				motion: {
+					DEFAULT: '#4C97FF',
+					light: '#5CB1FF',
+					dark: '#4280D7',
+					foreground: 'white'
+				},
+				looks: {
+					DEFAULT: '#9966FF',
+					light: '#B4A7D6',
+					dark: '#774DCB',
+					foreground: 'white'
+				},
+				control: {
+					DEFAULT: '#FFAB19',
+					light: '#FFB31A',
+					dark: '#CF8B17',
+					foreground: 'white'
+				},
+				sprite: {
+					DEFAULT: '#0FBD8C',
+					light: '#0FBD8C',
+					dark: '#0DA57A',
+					foreground: 'white'
 				}
 			},
 			borderRadius: {
