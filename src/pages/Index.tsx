@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -113,7 +112,10 @@ const Index = () => {
     
     const state = { ...spriteStates[spriteId] };
     
-    scripts.forEach(block => {
+    // Process each block in the script
+    for (let i = 0; i < scripts.length; i++) {
+      const block = scripts[i];
+      
       switch (block.type) {
         case 'move':
           // Calculate movement based on current direction
@@ -153,19 +155,21 @@ const Index = () => {
           }
           
           // Execute the repeat block's children if we haven't reached the limit
-          if (loopIndices[block.id] < block.params.times && block.children) {
+          if (loopIndices[block.id] < block.params.times && block.children && block.children.length > 0) {
+            // Process all child blocks
             executeScriptsForSprite(spriteId, block.children, loopIndices);
             
-            // Increment counter and continue processing this block if we haven't finished all iterations
+            // Increment counter
             loopIndices[block.id]++;
+            
+            // If we haven't completed all iterations, process this repeat block again
             if (loopIndices[block.id] < block.params.times) {
-              // Stay on this block to process the next iteration
-              return;
+              i--; // Stay on this block to process the next iteration
             }
           }
           break;
       }
-    });
+    }
     
     // Update the sprite state
     setSpriteStates(prev => ({
@@ -206,12 +210,12 @@ const Index = () => {
       loopIndices[sprite.id] = {};
     });
     
-    // Use a higher frequency to make animations smoother and prevent the default position flash
+    // Use a higher frequency to make animations smoother
     animationIntervalRef.current = window.setInterval(() => {
       sprites.forEach(sprite => {
         executeScriptsForSprite(sprite.id, sprite.scripts, loopIndices[sprite.id]);
       });
-    }, 50); // Reduced from 100ms to 50ms for smoother animation
+    }, 50);
   };
   
   // Stop the animation

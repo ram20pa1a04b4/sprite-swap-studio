@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import { Sprite } from '@/types/sprite';
 
@@ -21,7 +20,6 @@ const Canvas: React.FC<CanvasProps> = ({ sprites, spriteStates, onCollision, isP
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number | null>(null);
   const prevTimeRef = useRef<number>(0);
-  const initialRenderRef = useRef<boolean>(true);
   
   // Draw the entire canvas
   const drawCanvas = (ctx: CanvasRenderingContext2D) => {
@@ -64,57 +62,54 @@ const Canvas: React.FC<CanvasProps> = ({ sprites, spriteStates, onCollision, isP
     ctx.lineTo(canvas.width, canvas.height / 2);
     ctx.stroke();
     
-    // Only draw sprites if not in initial render state or if playing
-    if (!initialRenderRef.current || isPlaying) {
-      // Draw sprites
-      sprites.forEach(sprite => {
-        const state = spriteStates[sprite.id];
-        if (!state) return;
-        
-        // Save context state
-        ctx.save();
-        
-        // Translate to sprite position (canvas center is 0,0)
-        const canvasCenterX = canvas.width / 2;
-        const canvasCenterY = canvas.height / 2;
-        
-        ctx.translate(canvasCenterX + state.x, canvasCenterY - state.y);
-        
-        // Rotate based on direction (0 degrees is up)
-        const rotationInRadians = ((90 - state.direction) * Math.PI) / 180;
-        ctx.rotate(rotationInRadians);
-        
-        // Draw sprite
-        if (sprite.image) {
-          // Draw image if available
-          const img = new Image();
-          img.src = sprite.image;
-          ctx.drawImage(img, -sprite.width / 2, -sprite.height / 2, sprite.width, sprite.height);
-        } else {
-          // Draw a colored rectangle as fallback
-          ctx.fillStyle = sprite.color;
-          ctx.fillRect(-sprite.width / 2, -sprite.height / 2, sprite.width, sprite.height);
-        }
-        
-        // Restore context to previous state
-        ctx.restore();
-        
-        // Draw speech or thought bubbles
-        if (state.sayText || state.thinkText) {
-          drawTextBubble(
-            ctx, 
-            canvasCenterX + state.x, 
-            canvasCenterY - state.y - sprite.height/2 - 20, 
-            state.isThinking ? state.thinkText! : state.sayText!, 
-            state.isThinking
-          );
-        }
-      });
+    // Draw sprites - always render sprites, not dependent on isPlaying
+    sprites.forEach(sprite => {
+      const state = spriteStates[sprite.id];
+      if (!state) return;
       
-      // Check for collisions
-      if (isPlaying) {
-        checkCollisions();
+      // Save context state
+      ctx.save();
+      
+      // Translate to sprite position (canvas center is 0,0)
+      const canvasCenterX = canvas.width / 2;
+      const canvasCenterY = canvas.height / 2;
+      
+      ctx.translate(canvasCenterX + state.x, canvasCenterY - state.y);
+      
+      // Rotate based on direction (0 degrees is up)
+      const rotationInRadians = ((90 - state.direction) * Math.PI) / 180;
+      ctx.rotate(rotationInRadians);
+      
+      // Draw sprite
+      if (sprite.image) {
+        // Draw image if available
+        const img = new Image();
+        img.src = sprite.image;
+        ctx.drawImage(img, -sprite.width / 2, -sprite.height / 2, sprite.width, sprite.height);
+      } else {
+        // Draw a colored rectangle as fallback
+        ctx.fillStyle = sprite.color;
+        ctx.fillRect(-sprite.width / 2, -sprite.height / 2, sprite.width, sprite.height);
       }
+      
+      // Restore context to previous state
+      ctx.restore();
+      
+      // Draw speech or thought bubbles
+      if (state.sayText || state.thinkText) {
+        drawTextBubble(
+          ctx, 
+          canvasCenterX + state.x, 
+          canvasCenterY - state.y - sprite.height/2 - 20, 
+          state.isThinking ? state.thinkText! : state.sayText!, 
+          state.isThinking
+        );
+      }
+    });
+    
+    // Check for collisions only when playing
+    if (isPlaying) {
+      checkCollisions();
     }
   };
   
@@ -256,8 +251,6 @@ const Canvas: React.FC<CanvasProps> = ({ sprites, spriteStates, onCollision, isP
           }
         }
       }
-      // After first animation frame when playing, set initialRender to false
-      initialRenderRef.current = false;
     }
     
     // Draw the canvas
