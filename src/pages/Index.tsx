@@ -155,7 +155,13 @@ const Index = () => {
           // Execute the repeat block's children if we haven't reached the limit
           if (loopIndices[block.id] < block.params.times && block.children) {
             executeScriptsForSprite(spriteId, block.children, loopIndices);
+            
+            // Increment counter and continue processing this block if we haven't finished all iterations
             loopIndices[block.id]++;
+            if (loopIndices[block.id] < block.params.times) {
+              // Stay on this block to process the next iteration
+              return;
+            }
           }
           break;
       }
@@ -200,11 +206,12 @@ const Index = () => {
       loopIndices[sprite.id] = {};
     });
     
+    // Use a higher frequency to make animations smoother and prevent the default position flash
     animationIntervalRef.current = window.setInterval(() => {
       sprites.forEach(sprite => {
         executeScriptsForSprite(sprite.id, sprite.scripts, loopIndices[sprite.id]);
       });
-    }, 100);
+    }, 50); // Reduced from 100ms to 50ms for smoother animation
   };
   
   // Stop the animation
