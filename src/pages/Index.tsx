@@ -156,8 +156,14 @@ const Index = () => {
           
           // Execute the repeat block's children if we haven't reached the limit
           if (loopIndices[block.id] < block.params.times && block.children && block.children.length > 0) {
-            // Process all child blocks
-            executeScriptsForSprite(spriteId, block.children, loopIndices);
+            // Create a copy of the state before executing child blocks
+            const stateBefore = { ...state };
+            
+            // Execute all child blocks
+            if (block.children) {
+              // Use a separate function to execute the child blocks
+              executeChildBlocks(spriteId, block.children, state);
+            }
             
             // Increment counter
             loopIndices[block.id]++;
@@ -176,6 +182,46 @@ const Index = () => {
       ...prev,
       [spriteId]: state
     }));
+  };
+  
+  // Helper function to execute child blocks in a repeat block
+  const executeChildBlocks = (spriteId: string, childBlocks: Block[], state: any) => {
+    for (const childBlock of childBlocks) {
+      switch (childBlock.type) {
+        case 'move':
+          // Calculate movement based on current direction
+          const radians = (state.direction - 90) * Math.PI / 180;
+          state.x += childBlock.params.steps * Math.cos(radians);
+          state.y += childBlock.params.steps * Math.sin(radians);
+          break;
+        
+        case 'turn':
+          state.direction = (state.direction + childBlock.params.degrees) % 360;
+          if (state.direction < 0) state.direction += 360;
+          break;
+        
+        case 'goto':
+          state.x = childBlock.params.x;
+          state.y = childBlock.params.y;
+          break;
+        
+        case 'say':
+          state.sayText = childBlock.params.text;
+          state.thinkText = null;
+          state.textTimer = childBlock.params.seconds;
+          state.isThinking = false;
+          break;
+        
+        case 'think':
+          state.thinkText = childBlock.params.text;
+          state.sayText = null;
+          state.textTimer = childBlock.params.seconds;
+          state.isThinking = true;
+          break;
+          
+        // Nested repeat blocks not supported in this version
+      }
+    }
   };
   
   // Start the animation
